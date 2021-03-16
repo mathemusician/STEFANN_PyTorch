@@ -1,0 +1,16 @@
+import os
+import torch
+
+
+
+BATCH_SIZE=0
+LR=0
+EPOCH_START=0
+LOAD=EPOCH_START!=0
+EPOCH=0
+DEVICE=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+LOAD_DIR=''
+SAVE_DIR=''
+SRC_CHRS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+TRGT_CHRS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
