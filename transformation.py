@@ -20,9 +20,10 @@ class FANNetLabel(object):
 
 
 
-trans_fannet_src_img=transforms.Compose([transforms.ToTensor()])
-trans_fannet_trgt_img=transforms.Compose([transforms.ToTensor()])
-trans_fannet_trgt_label=transforms.Compose([FANNetLabel()])
-transformation_colornet_train=transforms.Compose([transforms.ToTensor()])
-transformation_colornet_val=None
+trans_src_img=transforms.Compose([transforms.ToTensor()])
+trans_trgt_img=transforms.Compose([transforms.ToTensor()])
+trans_trgt_label=transforms.Compose([FANNetLabel()])
+trans_input_color=transforms.Compose([transforms.ToTensor()])
+trans_input_mask=transforms.Compose([transforms.ToTensor()])
+trans_output_color=transforms.Compose([transforms.ToTensor()])
 
