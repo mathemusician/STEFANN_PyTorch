@@ -4,6 +4,7 @@ import itertools
 import pandas as pd
 import glob
 import config
+import random
 
 
 
@@ -12,9 +13,9 @@ COLORNET_IMG_DIR='/mnt/Data/GoogleFontsSTEFANN/colornet'
 
 
 def process_fannet(img_dir,save_path):
-    perms=itertools.product(list(config.SRC_CHRS),
-                            list(config.TRGT_CHRS),
-                            os.listdir(img_dir))
+    perms=itertools.product(os.listdir(img_dir),
+                            list(config.SRC_CHRS),
+                            list(config.TRGT_CHRS))
     df=pd.DataFrame(columns=['src_img_path',
                              'trgt_label',
                              'trgt_img_path',
@@ -23,16 +24,18 @@ def process_fannet(img_dir,save_path):
 
     for perm in perms:
         item={}
-        src_chr=str(ord(perm[0]))
-        trgt_chr=str(ord(perm[1]))
-        font=perm[2]
+        src_chr=str(ord(perm[1]))
+        trgt_chr=str(ord(perm[2]))
+        font=perm[0]
         src_img_path=path.join(img_dir,font,src_chr+'.jpg')
         trgt_img_path=path.join(img_dir,font,trgt_chr+'.jpg')
         item['src_img_path']=src_img_path
-        item['trgt_label']=config.TRGT_CHRS.find(perm[1])
+        item['trgt_label']=config.TRGT_CHRS.find(perm[2])
         item['trgt_img_path']=trgt_img_path
         item['font']=font
         item_list.append(item)
+
+    random.shuffle(item_list)
 
     df=df.append(item_list,ignore_index=True)
     df.to_csv(save_path,index=False)
@@ -55,6 +58,8 @@ def process_colornet(img_dir,save_path):
         item['input_mask']=path.join(input2_img_dir,file_name)
         item['output_color']=path.join(output_img_dir,file_name)
         item_list.append(item)
+
+    random.shuffle(item_list)
 
     df=df.append(item_list,ignore_index=True)
     df.to_csv(save_path,index=False)

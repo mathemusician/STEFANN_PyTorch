@@ -24,7 +24,7 @@ class FANNetDataset(data.Dataset):
     def __len__(self):
         return len(self.df)
 
-    
+
     def __getitem__(self,index):
         if torch.is_tensor(index)==True:
             index=index.tolist()

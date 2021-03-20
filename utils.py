@@ -32,18 +32,21 @@ def save_model(model,save_dir,name):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    torch.save(model.state_dict(),file_path)
+    if type(model)=='torch.nn.DataParallel':
+        torch.save(model.module.state_dict(),file_path)
+    else:
+        torch.save(model.state_dict(),file_path)
 
 
 def to_device(data):
     if config.DEVICE.type=='cpu':
         return data.to(config.DEVICE)
     else:
-        if type(data)=='torch.nn.Module':
+        if issubclass(type(data),torch.nn.Module)==True:
             data=torch.nn.DataParallel(data)
-            return data.to_device(config.DEVICE)
+            return data.to(config.DEVICE)
         else:
-            return data.to_device(config.DEVICE)
+            return data.to(config.DEVICE)
 
 
 def variable(func):

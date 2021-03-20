@@ -14,7 +14,7 @@ class FANNetLabel(object):
 
     
     def __call__(self,label):
-        onehot=torch.LongTensor([0]*LEN_TRGT_CHRS)
+        onehot=torch.FloatTensor([0]*LEN_TRGT_CHRS)
         onehot[label]=1
         return onehot
 

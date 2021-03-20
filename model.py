@@ -13,13 +13,11 @@ class FANNet(nn.Module):
                                 self._conv3x3(16,16),
                                 self._conv3x3(16,1))
         self.flatten=nn.Flatten()
-        self.img_linear=nn.Linear(input_shape[0]*input_shape[1],512)
-        self.onehot_linear=nn.Linear(self.onehot_len,512)
-        self.nolinear=nn.Sequential(nn.Linear(1024,1024),
-                                    nn.ReLU(inplace=True),
+        self.img_linear=self._linear(input_shape[0]*input_shape[1],512)
+        self.onehot_linear=self._linear(self.onehot_len,512)
+        self.nolinear=nn.Sequential(self._linear(1024,1024),
                                     nn.Dropout(0.5),
-                                    nn.Linear(1024,1024),
-                                    nn.ReLU(inplace=True))
+                                    self._linear(1024,1024))
         self.upsample=nn.Sequential(nn.Unflatten(dim=1,unflattened_size=(16,8,8)),
                                     self._up_block(16,16),
                                     self._up_block(16,16),
@@ -47,14 +45,25 @@ class FANNet(nn.Module):
         return nn.Sequential(*layers)
 
 
-    def forward(self,src_img,trgt_one_hot):
+    def _linear(self,input_channel,output_channel):
+        layers=[nn.Linear(input_channel,output_channel),
+                nn.ReLU(inplace=True)]
+        return nn.Sequential(*layers)
+
+
+    def __init__parameters(self):
+        pass
+
+
+    def forward(self,src_img,trgt_onehot):
         img_feat=self.conv(src_img)
-        img_feat=self.img_linear(self.flatten(img_feat))
-        trgt_feat=self.onehot_linear(trgt_one_hot)
+        img_feat=self.flatten(img_feat)
+        img_feat=self.img_linear(img_feat)
+        trgt_feat=self.onehot_linear(trgt_onehot)
         feat=torch.cat((img_feat,trgt_feat),dim=1)
         feat=self.nolinear(feat)
-        trgt_img=self.upsample(feat)
-        return trgt_img
+        output_img=self.upsample(feat)
+        return output_img
 
 
 
@@ -111,8 +120,8 @@ class ColorNet(nn.Module):
         mask_feat=self.mask_conv(input_mask)
         feat=torch.cat((color_feat,mask_feat),dim=1)
         feat=self.conv(feat)
-        output_color=self.upsample(feat)
-        return output_color
+        output_img=self.upsample(feat)
+        return output_img
 
 
 
