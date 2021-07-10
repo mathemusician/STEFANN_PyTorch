@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import config
 import pytorch_lightning as pl
+import config_PL as config
 
 
 class LightningFANNet(pl.LightningModule):
-    def __init__(self,onehot_len=len(config.TRGT_CHRS),input_shape=(64,64)):
+    def __init__(self, onehot_len=len(config.TRGT_CHRS), input_shape=(64,64)):
         super(LightningFANNet, self).__init__()
         
         self.input_shape=input_shape
@@ -59,10 +60,6 @@ class LightningFANNet(pl.LightningModule):
         return nn.Sequential(*layers)
 
 
-    def __init__parameters(self):
-        pass
-
-
     def forward(self,src_img,trgt_onehot):
         img_feat = self.conv(src_img)
         img_feat = self.flatten(img_feat)
@@ -74,6 +71,18 @@ class LightningFANNet(pl.LightningModule):
 
         return output_img
 
+
+    def configure_optimizers(self):
+        net_optim = optim.Adam(net.parameters(),
+                            betas=(config.BETAS),
+                            lr=config.LR,
+                            weight_decay=config.LAMBDA)
+    
+    def train_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self(x)
+        loss = loss.MAELoss()
+        return loss
 
 
 class LightningColorNet(pl.LightningModule):

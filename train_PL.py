@@ -7,22 +7,17 @@ import torch.utils.data as data
 import torch.backends.cudnn as cudnn
 import os
 import os.path as path
-import config
+import config_PL as config
 import model
 import dataset
 import loss
-import metric
 import utils
 
 
-
+# TODO: completely revise this
 def train(data_loader, net, criterion, net_optim, loss_meter, t, model_name):
     if model_name == 'FANNet':
         for src_img, trgt_label, trgt_img in data_loader:
-            net_optim.zero_grad()
-            src_img = utils.to_device(src_img)
-            trgt_label = utils.to_device(trgt_label)
-            trgt_img = utils.to_device(trgt_img)
             batch_num = src_img.size(0)
 
             output_img = net(src_img, trgt_label)
@@ -77,22 +72,16 @@ if __name__ == '__main__':
     elif config.MODEL == 'ColorNet':
         net = utils.to_device(model.ColorNet())
 
+    # TODO: replace this with the right code
     if config.LOAD == True:
         utils.load_model(net,
                          path.join(config.MODEL_DIR, str(config.EPOCH_START)),
                          config.MODEL+'.pth')
 
-    #set optimizer, loss and meter
-    net_optim = optim.Adam(net.parameters(),
-                         betas=(config.BETAS),
-                         lr=config.LR,
-                         weight_decay=config.LAMBDA)
-    criterion = loss.MAELoss()
-    loss_meter = metric.LossMeter()
-
     #train
     best_result=10**10
 
+'''
     for epoch in range(config.EPOCH_START, config.EPOCH):
         with tqdm(total=len(train_data), ncols=80) as t:
             net.train()
@@ -129,3 +118,4 @@ if __name__ == '__main__':
                          path.join(config.MODEL_DIR, str(epoch+1)),
                          config.MODEL+'.pth')
 
+'''
