@@ -49,7 +49,7 @@ class FANNetDataset(data.Dataset):
             
         info = self.df.loc[index,:]
         src_img_path = info[0]
-        trgt_label = int(info[1]) - self.lowest_number
+        trgt_label = int(info[1]) - self.lowest_number - 1
         trgt_img_path = info[2]
         src_img = Image.open(src_img_path).convert('L')
         trgt_img = Image.open(trgt_img_path).convert('L')
@@ -119,14 +119,6 @@ class LightningFANNetDataset(pl.LightningDataModule):
         assert self.highest_number - self.lowest_number == LEN_TRGT_CHRS
 
 
-    #@utils.variable
-    def FANNet_val(self):
-        return FANNetDataset(csv_file='./Data/STEFANN/fannet_val.csv',
-                            src_img_trans=self.trans_src_img,
-                            trgt_label_trans=self.trans_trgt_label,
-                            trgt_img_trans=self.trans_trgt_img,
-                            lowest_number=self.lowest_number)
-
     def train_dataloader(self):
         # return 
         fann = FANNetDataset(csv_file='./Data/STEFANN/fannet_train.csv',
@@ -139,13 +131,29 @@ class LightningFANNetDataset(pl.LightningDataModule):
                                batch_size=config.BATCH_SIZE,
                                shuffle=True)
 
+
     def val_dataloader(self):
-        return data.DataLoader(dataset=self.FANNet_val,
+        fann = FANNetDataset(csv_file='./Data/STEFANN/fannet_val.csv',
+                            src_img_trans=self.trans_src_img,
+                            trgt_label_trans=self.trans_trgt_label,
+                            trgt_img_trans=self.trans_trgt_img,
+                            lowest_number=self.lowest_number)
+
+        return data.DataLoader(dataset=[fann[i] for i in range(len(fann))],
                                batch_size=config.BATCH_SIZE,
                                shuffle=False)
 
+
     def test_dataloader(self):
-        pass
+        fann = FANNetDataset(csv_file='./Data/STEFANN/fannet_val.csv',
+                            src_img_trans=self.trans_src_img,
+                            trgt_label_trans=self.trans_trgt_label,
+                            trgt_img_trans=self.trans_trgt_img,
+                            lowest_number=self.lowest_number)
+
+        return data.DataLoader(dataset=[fann[0]],
+                               batch_size=1,
+                               shuffle=False)
 
 
 

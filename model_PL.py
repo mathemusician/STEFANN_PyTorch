@@ -83,17 +83,34 @@ class LightningFANNet(pl.LightningModule):
     
 
     def training_step(self, batch, batch_idx):
-        # TODO: update is so that is uses batch_idx
-        print(len(batch))
         src_img, trgt_label, trgt_img = batch
         output_img = self(src_img, trgt_label)
 
         model_loss = nn.functional.mse_loss(output_img, trgt_img)
-        print(model_loss)
-        #result = pl.TrainResult(minimize=model_loss)
-        #result.log('train_loss', model_loss, prog_bar=True)
 
-        return model_loss #result
+        return model_loss
+    
+    def validation_step(self, batch, batch_idx):
+        src_img, trgt_label, trgt_img = batch
+        output_img = self(src_img, trgt_label)
+
+        model_loss = nn.functional.mse_loss(output_img, trgt_img)
+
+        return model_loss
+    
+    def test_step(self, batch, batch_idx):
+        src_img, trgt_label, trgt_img = batch
+        output_img = self(src_img, trgt_label)
+
+        model_loss = nn.functional.mse_loss(output_img, trgt_img)
+
+        output = dict({
+            'MSE Loss': model_loss,
+            'label': trgt_label
+        })
+
+        self.log_dict(output)
+
 
 
 
