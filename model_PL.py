@@ -75,24 +75,25 @@ class LightningFANNet(pl.LightningModule):
 
 
     def configure_optimizers(self):
-        optim = optim.Adam(net.parameters(),
+        optim = torch.optim.Adam(self.parameters(),
                            betas=(config.BETAS),
                            lr=config.LR,
                            weight_decay=config.LAMBDA)
-        return net_optim
+        return optim
     
 
-    def train_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx):
         # TODO: update is so that is uses batch_idx
+        print(len(batch))
         src_img, trgt_label, trgt_img = batch
         output_img = self(src_img, trgt_label)
 
-        loss = loss.MAELoss(output_img, trgt_img)
+        model_loss = nn.functional.mse_loss(output_img, trgt_img)
+        print(model_loss)
+        #result = pl.TrainResult(minimize=model_loss)
+        #result.log('train_loss', model_loss, prog_bar=True)
 
-        result = pl.TrainResult(minimize=loss)
-        result.log('train_loss', loss, prog_bar=True)
-
-        return result
+        return model_loss #result
 
 
 
