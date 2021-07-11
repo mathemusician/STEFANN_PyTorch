@@ -1,3 +1,4 @@
+#%%
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -91,12 +92,13 @@ elif config.MODEL == 'ColorNet':
 if config.LOAD == True:
     pass
 
-# train
+#train
 dm = dataset.LightningFANNetDataset()
-trainer = pl.Trainer(max_epochs=20, gpus=0, progress_bar_refresh_rate=1, check_val_every_n_epoch=2)
+trainer = pl.Trainer(max_epochs=20, gpus=1,  progress_bar_refresh_rate=1, check_val_every_n_epoch=2, auto_lr_find=True)
 trainer.fit(net, dm)
 
-# test
+#%%
 trainer.test()
 
-# check out target.jpg and output.jpg
+
+# %%
