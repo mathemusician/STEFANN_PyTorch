@@ -1,3 +1,4 @@
-pytorch
 tqdm
+pytorch
 pytorch_lightning
+getpaths

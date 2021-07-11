@@ -2,6 +2,11 @@ import os
 import torch
 
 
+# Assumption 1
+# The fonts start with the same character 
+# Assumption 2
+# The fonts are numbered the same
+
 
 BATCH_SIZE=64
 MODEL='FANNet'
@@ -21,8 +26,7 @@ elif MODEL=='ColorNet':
     BETAS=(0.9,0.999)
     LAMBDA=0.1**7
 
-LOAD=EPOCH_START!=0
-DEVICE=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-SRC_CHRS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-TRGT_CHRS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
+LOAD = EPOCH_START != 0
+DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+SRC_CHRS = '0123456789______ABCDEFGHIJKLMNOPQRSTUVWXYZ______abcdefghijklmnopqrstuvwxyz'
+TRGT_CHRS = SRC_CHRS

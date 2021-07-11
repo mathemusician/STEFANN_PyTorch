@@ -3,48 +3,112 @@ import torch
 import torch.utils.data as data
 import pandas as pd
 from PIL import Image
-import transformation as trans
-import config
+import config_PL as config
 import utils
 import pytorch_lightning as pl
+import torchvision.transforms as transforms
+from getpaths import getpath
+import os
 
-#TODO: Do I need to make a pytorch lightning data module?
 
 
-class FANNetDataset(pl.LightningDataModule):
-    def __init__(self,csv_file,
-                 src_img_trans=None,
-                 trgt_label_trans=None,
-                 trgt_img_trans=None):
+LEN_TRGT_CHRS = len(config.TRGT_CHRS)
+
+class FANNetLabel(object):
+    def __init__(self):
+        super().__init__()
+    
+    def __call__(self, label):
+        onehot=torch.FloatTensor([0]*LEN_TRGT_CHRS)
+        onehot[label] = 1
+        return onehot
+
+
+class LightningFANNetDataset(pl.LightningDataModule):
+    def __init__(self):
         super().__init__()
 
-        self.df=pd.read_csv(csv_file)
-        self.src_img_trans=src_img_trans
-        self.trgt_label_trans=trgt_label_trans
-        self.trgt_img_trans=trgt_img_trans
+        self.trans_src_img = transforms.Compose([transforms.ToTensor()])
+        self.trans_trgt_img = transforms.Compose([transforms.ToTensor()])
+        self.trans_trgt_label = transforms.Compose([FANNetLabel()])
+        self.lowest_number = None
+        self.highest_number = None
 
     def prepare_data(self):
-        # nothing is downloaded
-        pass
+        try:
+            #TODO: downloading data for google colab here
+            #TODO: maybe make CSV files here
+            pass
+        finally:
+            pass
 
-    def setup(self):
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
+    def setup(self, stage=None):
+        cwd = getpath()
+        train_folder = cwd/'fannet'/'train'
 
-        FANN_train = 
-        FANN_test = 
-        
+        # this is so that one-hot encoded data can start at 0
+        for folder_name in train_folder.ls():
+            if folder_name == '.DS_Store':
+                continue
+
+            file_names = os.listdir(train_folder/folder_name)
+
+            if '.DS_Store' in file_names:
+                file_names.remove('.DS_Store')
+
+            file_ints = [int(i.split('.')[0]) for i in file_names]
+            file_ints.sort()
+            lowest_file_int = file_ints[0]
+            highest_file_int = file_ints[-1]
+
+            if self.lowest_number == None:
+                self.lowest_number = lowest_file_int
+            else:
+                if lowest_file_int < self.lowest_number:
+                    self.lowest_number = lowest_file_int
+            
+            if self.highest_number == None:
+                self.highest_number = highest_file_int
+            else:
+                if highest_file_int > self.highest_number:
+                    self.highest_number = highest_file_int
+
+        # number of target characters should match the number of unique font image labels
+        assert self.highest_number - self.lowest_number == LEN_TRGT_CHRS
+
 
     def train_dataloader(self):
-        pass
+        return FANNetDataset(csv_file='./Data/STEFANN/fannet_train.csv',
+                             src_img_trans=self.trans_src_img,
+                             trgt_label_trans=self.trans_trgt_label,
+                             trgt_img_trans=self.trans_trgt_img,
+                             lowest_number=self.lowest_number)
 
     def val_dataloader(self):
-        pass
+        return FANNetDataset(csv_file='./Data/STEFANN/fannet_val.csv',
+                             src_img_trans=self.trans_src_img,
+                             trgt_label_trans=self.trans_trgt_label,
+                             trgt_img_trans=self.trans_trgt_img,
+                             lowest_number=self.lowest_number)
 
     def test_dataloader(self):
         pass
+
+
+
+class FANNetDataset(data.Dataset):
+    def __init__(self,csv_file,
+                 src_img_trans=None,
+                 trgt_label_trans=None,
+                 trgt_img_trans=None,
+                 lowest_number=None):
+        super().__init__()
+
+        self.df = pd.read_csv(csv_file)
+        self.src_img_trans = src_img_trans
+        self.trgt_label_trans = trgt_label_trans
+        self.trgt_img_trans = trgt_img_trans
+        self.lowest_number = lowest_number
 
 
     def __len__(self):
@@ -52,27 +116,31 @@ class FANNetDataset(pl.LightningDataModule):
 
 
     def __getitem__(self,index):
-        if torch.is_tensor(index)==True:
-            index=index.tolist()
+        if torch.is_tensor(index) == True:
+            index = index.tolist()
             
-        info=self.df.loc[index,:]
-        src_img_path=info[0]
-        trgt_label=int(info[1])
-        trgt_img_path=info[2]
-        src_img=Image.open(src_img_path).convert('L')
-        trgt_img=Image.open(trgt_img_path).convert('L')
+        info = self.df.loc[index,:]
+        src_img_path = info[0]
+        trgt_label = int(info[1]) - self.lowest_number
+        trgt_img_path = info[2]
+        src_img = Image.open(src_img_path).convert('L')
+        trgt_img = Image.open(trgt_img_path).convert('L')
 
-        if self.src_img_trans!=None:
-            src_img=self.src_img_trans(src_img)
+        if self.src_img_trans != None:
+            src_img = self.src_img_trans(src_img)
 
-        if self.trgt_label_trans!=None:
-            trgt_label=self.trgt_label_trans(trgt_label)
+        if self.trgt_label_trans != None:
+            trgt_label = self.trgt_label_trans(trgt_label)
 
-        if self.trgt_img_trans!=None:
-            trgt_img=self.trgt_img_trans(trgt_img)
+        if self.trgt_img_trans != None:
+            trgt_img = self.trgt_img_trans(trgt_img)
 
         return src_img,trgt_label,trgt_img
 
+
+trans_input_color = transforms.Compose([transforms.ToTensor()])
+trans_input_mask = transforms.Compose([transforms.ToTensor()])
+trans_output_color = transforms.Compose([transforms.ToTensor()])
 
 
 class ColorNetDataset(pl.LightningDataModule):
@@ -81,10 +149,11 @@ class ColorNetDataset(pl.LightningDataModule):
                  input_mask_trans=None,
                  output_color_trans=None):
         super().__init__()
-        self.df=pd.read_csv(csv_file)
-        self.input_color_trans=input_color_trans
-        self.input_mask_trans=input_mask_trans
-        self.output_color_trans=output_color_trans
+
+        self.df = pd.read_csv(csv_file)
+        self.input_color_trans = input_color_trans
+        self.input_mask_trans = input_mask_trans
+        self.output_color_trans = output_color_trans
 
 
     def __len__(self):
@@ -92,10 +161,10 @@ class ColorNetDataset(pl.LightningDataModule):
 
 
     def __getitem__(self,index):
-        if torch.is_tensor(index)==True:
-            index=index.tolist()
+        if torch.is_tensor(index) == True:
+            index = index.tolist()
 
-        info=self.df.loc[index,:]
+        info = self.df.loc[index,:]
         input_color_img_path = info[0]
         input_mask_img_path = info[1]
         output_color_img_path = info[2]
@@ -112,26 +181,10 @@ class ColorNetDataset(pl.LightningDataModule):
         if self.output_color_trans != None:
             output_color_img = self.output_color_trans(output_color_img)
 
-        return input_color_img,input_mask_img,output_color_img
+        return input_color_img, input_mask_img, output_color_img
 
 
-
-@utils.variable
-def FANNet_train():
-    return FANNetDataset(csv_file='./Data/STEFANN/fannet_train.csv',
-                         src_img_trans=trans.trans_src_img,
-                         trgt_label_trans=trans.trans_trgt_label,
-                         trgt_img_trans=trans.trans_trgt_img)
-
-
-@utils.variable
-def FANNet_val():
-    return FANNetDataset(csv_file='./Data/STEFANN/fannet_val.csv',
-                         src_img_trans=trans.trans_src_img,
-                         trgt_label_trans=trans.trans_trgt_label,
-                         trgt_img_trans=trans.trans_trgt_img)
-
-
+'''
 @utils.variable
 def ColorNet_train():
     return ColorNetDataset(csv_file='./Data/STEFANN/colornet_train.csv',
@@ -146,15 +199,23 @@ def ColorNet_val():
                            input_color_trans=trans.trans_input_color,
                            input_mask_trans=trans.trans_input_mask,
                            output_color_trans=trans.trans_output_color)
+'''
 
 
-
-if __name__=='__main__':
-    for i in FANNet_train[0]:
+if __name__ == '__main__':
+    FANN_data = LightningFANNetDataset()
+    FANN_data.setup()
+    
+    for i in FANN_data.train_dataloader()[0]:
         print(i)
         print(i.size())
-
+    
+    '''
     for i in ColorNet_train[0]:
         print(i)
         print(i.size())
+    '''
+
+
+
 
