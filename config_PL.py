@@ -27,6 +27,5 @@ elif MODEL=='ColorNet':
     LAMBDA=0.1**7
 
 LOAD = EPOCH_START != 0
-DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 SRC_CHRS = '0123456789______ABCDEFGHIJKLMNOPQRSTUVWXYZ______abcdefghijklmnopqrstuvwxyz'
 TRGT_CHRS = SRC_CHRS

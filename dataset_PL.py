@@ -1,3 +1,4 @@
+#%%
 import config
 import torch
 import torch.utils.data as data
@@ -9,6 +10,7 @@ import pytorch_lightning as pl
 import torchvision.transforms as transforms
 from getpaths import getpath
 import os
+import matplotlib.pyplot as plt
 
 
 
@@ -234,7 +236,9 @@ if __name__ == '__main__':
     FANN_data.setup()
     
     for i in next(iter(FANN_data.train_dataloader())):
-        print(i)
+        src_img, trgt_label, trgt_img = i
+        if len(src_img.shape) >= 2:
+            plt.savefig('test.jpg')
     
     
     '''
@@ -246,3 +250,5 @@ if __name__ == '__main__':
 
 
 
+
+# %%

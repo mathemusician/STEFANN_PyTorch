@@ -20,8 +20,8 @@ import sys
 
 
 
-NUM_TRAIN = 3
-NUM_VAL = 3
+NUM_TRAIN = 800
+NUM_VAL = 10
 SEED = 3
 
 # make deterministic for reproducibility
@@ -94,11 +94,11 @@ if config.LOAD == True:
 
 #train
 dm = dataset.LightningFANNetDataset()
-trainer = pl.Trainer(max_epochs=1, gpus=0, progress_bar_refresh_rate=20, check_val_every_n_epoch=2)
+trainer = pl.Trainer(max_epochs=20, gpus=0, progress_bar_refresh_rate=1, check_val_every_n_epoch=2)
 trainer.fit(net, dm)
 
 #%%
-a = trainer.test()
+trainer.test()
 
 
 # %%

@@ -2,3 +2,4 @@ tqdm
 pytorch
 pytorch_lightning
 getpaths
+matplotlib

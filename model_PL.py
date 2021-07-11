@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 import config_PL as config
+import matplotlib.pyplot as plt
+import torchvision.transforms as T
 
 
 class LightningFANNet(pl.LightningModule):
@@ -104,9 +106,14 @@ class LightningFANNet(pl.LightningModule):
 
         model_loss = nn.functional.mse_loss(output_img, trgt_img)
 
+        def save_image(image, image_name):
+            T.functional.to_pil_image(image.squeeze(0)).save(image_name)
+
+        save_image(trgt_img, 'target.jpg')
+        save_image(output_img, 'output.jpg')
+
         output = dict({
-            'MSE Loss': model_loss,
-            'label': trgt_label
+            'MSE Loss': model_loss
         })
 
         self.log_dict(output)
