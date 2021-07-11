@@ -1,5 +1,5 @@
 tqdm
 pytorch
-pytorch_lightning
+pytorch-lightning
 getpaths
 matplotlib
